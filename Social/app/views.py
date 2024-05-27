@@ -16,7 +16,7 @@ def register_user(request):
             return Response({'message': 'User Created', 'Data':serializer.data}, status=status.HTTP_201_CREATED)
         
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+# @permission_classes([IsAuthenticated])
 def logout_user(request):
     if request.method == 'POST':
         try:
@@ -38,6 +38,12 @@ class Likeview(viewsets.ModelViewSet):
     
     def create(self, request):
         user = request.user
+        post_id = request.data.get('post')
         
-        return 
+        if Like.objects.filter(user=user, post_id=post_id).exists():
+            
+            return Response("Already Liked the Post Once", status=status.HTTP_400_BAD_REQUEST)
+                
+        return super().create(request)  
+    
     
