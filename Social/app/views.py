@@ -1,4 +1,6 @@
 from django.shortcuts import render
+from django.core.mail import send_mail, EmailMessage
+from django.conf import settings
 from .serializers import *
 from .models import *
 from rest_framework.response import Response
@@ -10,13 +12,16 @@ from rest_framework.decorators import api_view, permission_classes
 @permission_classes([AllowAny])
 def register_user(request):
     if request.method == "POST":
+        email = EmailMessage("Welcome to Social Media App",f"Hi {request.data.get('first_name')}, thank you for registering in Social Media App.",
+        settings.EMAIL_HOST_USER, [request.data.get('email')])
         serializer = RegisterSerial(data=request.data)
         if serializer.is_valid(raise_exception=True):
+            email.send()
+            # send_mail( subject, message, from_email, recipient_list )
             serializer.save()
             return Response({'message': 'User Created', 'Data':serializer.data}, status=status.HTTP_201_CREATED)
         
 @api_view(['POST'])
-# @permission_classes([IsAuthenticated])
 def logout_user(request):
     if request.method == 'POST':
         try:
@@ -28,22 +33,43 @@ def logout_user(request):
 class Postview(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerial
+    filterset_fields=['title', 'caption', 'tags', 'user']
+    search_fields = ['title', 'tags']
 
 class Commentview(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerial
+    filterset_fields=['user', 'post', 'text']
+
 class Likeview(viewsets.ModelViewSet):
     queryset = Like.objects.all()
     serializer_class = LikeSerial
+    filterset_fields=['user', 'post']
     
-    def create(self, request):
-        user = request.user
-        post_id = request.data.get('post')
-        
-        if Like.objects.filter(user=user, post_id=post_id).exists():
-            
-            return Response("Already Liked the Post Once", status=status.HTTP_400_BAD_REQUEST)
-                
-        return super().create(request)  
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    # def perform_create(self, serializer):
+    #     serializer.save(user=self.request.user)
+    #     return super().perform_create(serializer)
     
     
