@@ -1,6 +1,8 @@
 from rest_framework import serializers, validators
 from .models import *
 from django.contrib.auth.models import User
+from rest_framework.authtoken.models import Token
+
 
 class RegisterSerial(serializers.ModelSerializer):
     confirm_password = serializers.CharField(required=True)
@@ -11,11 +13,11 @@ class RegisterSerial(serializers.ModelSerializer):
         extra_kwargs = {'password': {'write_only': True}}
         
     def save(self):
-        # account = User(first_name=self.validated_data['first_name'], 
-        #                last_name=self.validated_data['last_name'],
-        #                username=self.validated_data['username'], 
-        #                email=self.validated_data['email'])
-        account = User(**self.validated_data)
+        account = User(first_name=self.validated_data['first_name'], 
+                       last_name=self.validated_data['last_name'],
+                       username=self.validated_data['username'], 
+                       email=self.validated_data['email'])
+        
         account.set_password(self.validated_data['password'])
         account.save()
         return account
@@ -32,6 +34,10 @@ class PostSerial(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = ['title', 'image', 'caption', 'tags', 'user']
+        
+    # def save(self):
+    #     user_id = Token.objects.get(key=request.auth.key).user_id
+    #     user = User.objects.get(id=user_id)
 
 class CommentSerial(serializers.ModelSerializer):
     class Meta:
