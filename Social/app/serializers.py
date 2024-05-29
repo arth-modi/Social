@@ -31,20 +31,33 @@ class RegisterSerial(serializers.ModelSerializer):
         return data
 
 class PostSerial(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), write_only=True)
     class Meta:
         model = Post
         fields = ['title', 'image', 'caption', 'tags', 'user']
         
-    # def save(self):
-    #     user_id = Token.objects.get(key=request.auth.key).user_id
-    #     user = User.objects.get(id=user_id)
+    # def create(self, validated_data):
+    #     validated_data['user'] = int(Token.objects.get(key=self.context["request"].auth.key).user_id)
+    #     instance=super().create(validated_data)
+    def to_internal_value(self, data):
+        user = Token.objects.get(key=self.context["request"].auth.key).user
+        data['user'] = user.id
+        return super().to_internal_value(data)        
 
 class CommentSerial(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), write_only=True)
     class Meta:
         model = Comment
-        fields = ['user', 'post', 'text']
+        fields = ['post', 'text', 'user']
+    
+    def to_internal_value(self, data):
+        user = Token.objects.get(key=self.context["request"].auth.key).user
+        mutable_data = data.copy()
+        mutable_data['user'] = user.id
+        return super().to_internal_value(mutable_data) 
 
 class LikeSerial(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), write_only=True)
     class Meta:
         model = Like
         fields = ['user', 'post']
@@ -55,6 +68,12 @@ class LikeSerial(serializers.ModelSerializer):
                 message=("Already Liked the post once")
             )
         ] 
+        
+    def to_internal_value(self, data):
+        user = Token.objects.get(key=self.context["request"].auth.key).user
+        mutable_data = data.copy()
+        mutable_data['user'] = user.id
+        return super().to_internal_value(mutable_data)  
         
         
         

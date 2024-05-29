@@ -44,50 +44,50 @@ class Postview(viewsets.ModelViewSet):
     throttle_classes = [Throttle]
     filterset_fields=['title', 'caption', 'tags', 'user']
     search_fields = ['title', 'tags']
-    def create(self, request, *args, **kwargs):
-        user_id = Token.objects.get(key=request.auth.key).user_id
-        # print(request.data.get('user'), user_id)
-        if int(user_id) == int(request.data.get('user')):
-            serializer = self.get_serializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            self.perform_create(serializer)
-            headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-        else:
-            return Response("Enter Valid User Id", status=status.HTTP_400_BAD_REQUEST)
+    # def create(self, request, *args, **kwargs):
+    #     user_id = Token.objects.get(key=request.auth.key).user_id
+    #     # print(request.data.get('user'), user_id)
+    #     if int(user_id) == int(request.data.get('user')):
+    #         serializer = self.get_serializer(data=request.data)
+    #         serializer.is_valid(raise_exception=True)
+    #         self.perform_create(serializer)
+    #         headers = self.get_success_headers(serializer.data)
+    #         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    #     else:
+    #         return Response("Enter Valid User Id", status=status.HTTP_400_BAD_REQUEST)
 
 class Commentview(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerial
     throttle_classes = [Throttle]
     filterset_fields=['user', 'post', 'text']
-    def create(self, request, *args, **kwargs):
-        user_id = Token.objects.get(key=request.auth.key).user_id
-        # print(request.data.get('user'), user_id)
-        if int(user_id) == int(request.data.get('user')):
-            serializer = self.get_serializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            self.perform_create(serializer)
-            headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-        else:
-            return Response("Enter Valid User Id", status=status.HTTP_400_BAD_REQUEST)
+    # def create(self, request, *args, **kwargs):
+    #     user_id = Token.objects.get(key=request.auth.key).user_id
+    #     # print(request.data.get('user'), user_id)
+    #     if int(user_id) == int(request.data.get('user')):
+    #         serializer = self.get_serializer(data=request.data)
+    #         serializer.is_valid(raise_exception=True)
+    #         self.perform_create(serializer)
+    #         headers = self.get_success_headers(serializer.data)
+    #         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    #     else:
+    #         return Response("Enter Valid User Id", status=status.HTTP_401_UNAUTHORIZED)
 
 class Likeview(viewsets.ModelViewSet):
     queryset = Like.objects.all()
     serializer_class = LikeSerial
     filterset_fields=['user', 'post']
-    def create(self, request, *args, **kwargs):
-        user_id = Token.objects.get(key=request.auth.key).user_id
-        # print(request.data.get('user'), user_id)
-        if int(user_id) == int(request.data.get('user')):
-            serializer = self.get_serializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            self.perform_create(serializer)
-            headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-        else:
-            return Response("Enter Valid User Id", status=status.HTTP_400_BAD_REQUEST)
+    # def create(self, request, *args, **kwargs):
+    #     user_id = Token.objects.get(key=request.auth.key).user_id
+    #     # print(request.data.get('user'), user_id)
+    #     if int(user_id) == int(request.data.get('user')):
+    #         serializer = self.get_serializer(data=request.data)
+    #         serializer.is_valid(raise_exception=True)
+    #         self.perform_create(serializer)
+    #         headers = self.get_success_headers(serializer.data)
+    #         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    #     else:
+    #         return Response("Enter Valid User Id", status=status.HTTP_401_UNAUTHORIZED)
     
 @api_view(['DELETE',])
 def remove_like(request):
@@ -97,11 +97,11 @@ def remove_like(request):
         if int(user_id)== int(request.data.get('user')):
             if Like.objects.filter(user=request.data.get('user'), post=request.data.get('post')).exists():
                 Like.objects.filter(user=request.data.get('user'), post=request.data.get('post')).delete()
-                return Response({'message':'Unlike'},status=status.HTTP_200_OK)
+                return Response({'message':'Unlike'},status=status.HTTP_204_NO_CONTENT)
             else:
                 return Response("Already didn't like the post")
         else:
-            return Response("Not a Valid user Id")    
+            return Response("Not a Valid user Id", status=status.HTTP_401_UNAUTHORIZED)    
 
     
     
