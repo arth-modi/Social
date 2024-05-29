@@ -22,7 +22,6 @@ def register_user(request):
         serializer = RegisterSerial(data=request.data)
         if serializer.is_valid(raise_exception=True):
             email.send()
-            # send_mail( subject, message, from_email, recipient_list )
             serializer.save()
             return Response({'message': 'User Created', 'Data':serializer.data, 
                              'id': User.objects.get(username=request.data.get('username')).id}, 
@@ -92,7 +91,6 @@ class Likeview(viewsets.ModelViewSet):
 @api_view(['DELETE',])
 def remove_like(request):
     if request.method == 'DELETE':
-        # serializer = LikeSerializer(data=request.data)
         user_id = Token.objects.get(key=request.auth.key).user_id
         if int(user_id)== int(request.data.get('user')):
             if Like.objects.filter(user=request.data.get('user'), post=request.data.get('post')).exists():
