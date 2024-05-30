@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 
 
-class RegisterSerial(serializers.ModelSerializer):
+class RegisterSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(required=True)
     
     class Meta:
@@ -30,7 +30,7 @@ class RegisterSerial(serializers.ModelSerializer):
             raise serializers.ValidationError("Email Already Registered Use new email or Login")
         return data
 
-class PostSerial(serializers.ModelSerializer):
+class PostSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), write_only=True)
     class Meta:
         model = Post
@@ -42,9 +42,10 @@ class PostSerial(serializers.ModelSerializer):
     def to_internal_value(self, data):
         user = Token.objects.get(key=self.context["request"].auth.key).user
         data['user'] = user.id
-        return super().to_internal_value(data)        
+        return super().to_internal_value(data)   
+        # request.user.id 
 
-class CommentSerial(serializers.ModelSerializer):
+class CommentSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), write_only=True)
     class Meta:
         model = Comment
@@ -56,7 +57,7 @@ class CommentSerial(serializers.ModelSerializer):
         mutable_data['user'] = user.id
         return super().to_internal_value(mutable_data) 
 
-class LikeSerial(serializers.ModelSerializer):
+class LikeSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), write_only=True)
     class Meta:
         model = Like

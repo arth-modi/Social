@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 class Post(models.Model):
     title = models.CharField(max_length=150)
     image = models.ImageField()
-    caption = models.TextField()
+    caption = models.TextField(null=True, blank=True)
     tags = models.CharField(max_length=150)
     posted_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -21,7 +21,7 @@ class Comment(models.Model):
 
 class Like(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='posts')
     
     class Meta:
         unique_together = ('user','post')

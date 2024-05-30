@@ -4,6 +4,7 @@ from django.conf import settings
 from .serializers import *
 from .models import *
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
@@ -12,20 +13,27 @@ from rest_framework.decorators import api_view, permission_classes, throttle_cla
 class Throttle(UserRateThrottle):
   rate = '100/day'
 
-@api_view(['POST'])
-@throttle_classes([Throttle]) 
-@permission_classes([AllowAny])
-def register_user(request):
-    if request.method == "POST":
+class Registerview(APIView):
+    permission_classes=[AllowAny]  
+    throttle_classes=[Throttle]
+    
+    def post(self,request):
         email = EmailMessage("Welcome to Social Media App",f"Hi {request.data.get('first_name')}, thank you for registering in Social Media App.",
         settings.EMAIL_HOST_USER, [request.data.get('email')])
-        serializer = RegisterSerial(data=request.data)
+        serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             email.send()
             serializer.save()
             return Response({'message': 'User Created', 'Data':serializer.data, 
-                             'id': User.objects.get(username=request.data.get('username')).id}, 
+                                'id': User.objects.get(username=request.data.get('username')).id}, 
                             status=status.HTTP_201_CREATED)
+
+# @api_view(['POST'])
+# @throttle_classes([Throttle]) 
+# @permission_classes([AllowAny])
+# def register_user(request):
+#     if request.method == "POST":
+
         
 @api_view(['POST'])
 def logout_user(request):
@@ -39,7 +47,7 @@ def logout_user(request):
 
 class Postview(viewsets.ModelViewSet):
     queryset = Post.objects.all()
-    serializer_class = PostSerial
+    serializer_class = PostSerializer
     throttle_classes = [Throttle]
     filterset_fields=['title', 'caption', 'tags', 'user']
     search_fields = ['title', 'tags']
@@ -57,7 +65,7 @@ class Postview(viewsets.ModelViewSet):
 
 class Commentview(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
-    serializer_class = CommentSerial
+    serializer_class = CommentSerializer
     throttle_classes = [Throttle]
     filterset_fields=['user', 'post', 'text']
     # def create(self, request, *args, **kwargs):
@@ -74,7 +82,7 @@ class Commentview(viewsets.ModelViewSet):
 
 class Likeview(viewsets.ModelViewSet):
     queryset = Like.objects.all()
-    serializer_class = LikeSerial
+    serializer_class = LikeSerializer
     filterset_fields=['user', 'post']
     # def create(self, request, *args, **kwargs):
     #     user_id = Token.objects.get(key=request.auth.key).user_id
