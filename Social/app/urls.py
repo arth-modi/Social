@@ -10,8 +10,8 @@ router.register(r'like', Likeview)
 
 urlpatterns = [
     path('register/', Registerview.as_view(), name='register'),
-    path('login/', obtain_auth_token, name='login'),
-    path('logout/', logout_user, name='logout'),
+    path('login/', LoginAuthentication.as_view(), name='login'),
+    path('logout/', Logoutview.as_view(), name='logout'),
     path('unlike/', remove_like, name='unlike'),
     path('', include(router.urls)),
 ]

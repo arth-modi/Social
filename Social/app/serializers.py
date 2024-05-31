@@ -2,10 +2,11 @@ from rest_framework import serializers, validators
 from .models import *
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
-
+from django.core.mail import EmailMessage
+from django.conf import settings
 
 class RegisterSerializer(serializers.ModelSerializer):
-    confirm_password = serializers.CharField(required=True)
+    confirm_password = serializers.CharField(required=True, write_only = True)
     
     class Meta:
         model = User
@@ -13,11 +14,12 @@ class RegisterSerializer(serializers.ModelSerializer):
         extra_kwargs = {'password': {'write_only': True}}
         
     def save(self):
-        account = User(first_name=self.validated_data['first_name'], 
-                       last_name=self.validated_data['last_name'],
-                       username=self.validated_data['username'], 
+        account = User(username=self.validated_data['username'], 
                        email=self.validated_data['email'])
-        
+        email = EmailMessage("Welcome to Social Media App",
+                             f"Hi {self.validated_data['first_name']}, thank you for registering in Social Media App.",
+                            settings.EMAIL_HOST_USER, [self.validated_data['email']])
+        email.send()
         account.set_password(self.validated_data['password'])
         account.save()
         return account
@@ -32,17 +34,29 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 class PostSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), write_only=True)
+    comment_count = serializers.SerializerMethodField()
+    like_count = serializers.SerializerMethodField()
     class Meta:
         model = Post
-        fields = ['title', 'image', 'caption', 'tags', 'user']
-        
+        fields = ['title', 'image', 'caption', 'tags', 'user', 'comment_count', 'like_count']
+    
+    def get_comment_count(self, obj):
+        return obj.post_comment.count()
+    
+    def get_like_count(self, obj):
+        return obj.post_like.count()    
+    
+    def create(self, validated_data):
+            user = self.context['user']
+            return Post(**validated_data, user=user)
     # def create(self, validated_data):
     #     validated_data['user'] = int(Token.objects.get(key=self.context["request"].auth.key).user_id)
     #     instance=super().create(validated_data)
-    def to_internal_value(self, data):
-        user = Token.objects.get(key=self.context["request"].auth.key).user
-        data['user'] = user.id
-        return super().to_internal_value(data)   
+    # def to_internal_value(self, data):
+    #     user = Token.objects.get(key=self.context["request"].auth.key).user
+    #     mutable_data = data.copy()
+    #     mutable_data['user'] = user.id
+    #     return super().to_internal_value(mutable_data)   
         # request.user.id 
 
 class CommentSerializer(serializers.ModelSerializer):

@@ -6,51 +6,68 @@ from .models import *
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
-from rest_framework import status, viewsets
+from rest_framework import status, viewsets, generics, exceptions, authentication
+from django.contrib.auth import authenticate, get_user_model
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.decorators import api_view, permission_classes, throttle_classes
 
 class Throttle(UserRateThrottle):
   rate = '100/day'
 
-class Registerview(APIView):
+class Registerview(generics.CreateAPIView):
+    queryset=User.objects.all()
     permission_classes=[AllowAny]  
     throttle_classes=[Throttle]
+    serializer_class=RegisterSerializer
     
-    def post(self,request):
-        email = EmailMessage("Welcome to Social Media App",f"Hi {request.data.get('first_name')}, thank you for registering in Social Media App.",
-        settings.EMAIL_HOST_USER, [request.data.get('email')])
-        serializer = RegisterSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            email.send()
-            serializer.save()
-            return Response({'message': 'User Created', 'Data':serializer.data, 
-                                'id': User.objects.get(username=request.data.get('username')).id}, 
-                            status=status.HTTP_201_CREATED)
+    # def post(self,request):
+    #     email = EmailMessage("Welcome to Social Media App",f"Hi {request.data.get('first_name')}, thank you for registering in Social Media App.",
+    #     settings.EMAIL_HOST_USER, [request.data.get('email')])
+    #     serializer = RegisterSerializer(data=request.data)
+    #     if serializer.is_valid(raise_exception=True):
+    #         email.send()
+    #         serializer.save()
+    #         return Response({'message': 'User Created', 'Data':serializer.data, 
+    #                             'id': User.objects.get(username=request.data.get('username')).id}, 
+    #                         status=status.HTTP_201_CREATED)
 
-# @api_view(['POST'])
-# @throttle_classes([Throttle]) 
-# @permission_classes([AllowAny])
-# def register_user(request):
-#     if request.method == "POST":
-
+class LoginAuthentication(generics.CreateAPIView):
+    permission_classes=[AllowAny]
+    def create(self, request, *args, **kwargs):
+        # Get the username and password
+        username = request.data.get('username')
+        password = request.data.get('password')
+        user = None
         
-@api_view(['POST'])
-def logout_user(request):
-    if request.method == 'POST':
+        if not user:
+            user = authenticate(username=username, password=password)
+
+        if user:
+            token, _ = Token.objects.get_or_create(user=user)
+            return Response({'username':username, 'token': token.key}, status=status.HTTP_200_OK)
+
+        return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
+class Logoutview(generics.DestroyAPIView):
+    def destroy(self, request, *args, **kwargs):
         try:
             request.user.auth_token.delete()
-            return Response({'message': 'Successfully logged out.'}, status=status.HTTP_200_OK)
+            return Response({'message': 'Successfully logged out.'}, status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 
 class Postview(viewsets.ModelViewSet):
-    queryset = Post.objects.all()
+    queryset = Post.objects.prefetch_related('post_comment', 'post_like').all()
     serializer_class = PostSerializer
     throttle_classes = [Throttle]
     filterset_fields=['title', 'caption', 'tags', 'user']
     search_fields = ['title', 'tags']
+    
+    def get_serializer_context(self):
+        context = super(Postview, self).get_serializer_context()
+        context.update({"user": self.request.user.id})
+        return context
     # def create(self, request, *args, **kwargs):
     #     user_id = Token.objects.get(key=request.auth.key).user_id
     #     # print(request.data.get('user'), user_id)
