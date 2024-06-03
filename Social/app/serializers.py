@@ -69,7 +69,6 @@ class PostCreateSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 class CommentSerializer(serializers.ModelSerializer):
-    # user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), write_only=True)
     class Meta:
         model = Comment
         fields = ['post', 'text', 'user']
@@ -79,17 +78,11 @@ class CommentSerializer(serializers.ModelSerializer):
         print(validated_data)
         print(self.context)
         return super().create(validated_data)
-    # def to_internal_value(self, data):
-    #     user = Token.objects.get(key=self.context["request"].auth.key).user
-    #     mutable_data = data.copy()
-    #     mutable_data['user'] = user.id
-    #     return super().to_internal_value(mutable_data) 
 
 class LikeSerializer(serializers.ModelSerializer):
-    # user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), write_only=True)
     class Meta:
         model = Like
-        fields = ['user', 'post']
+        fields = ['post', 'user']
         validators = [
             validators.UniqueTogetherValidator(
                 queryset=model.objects.all(),
@@ -97,11 +90,12 @@ class LikeSerializer(serializers.ModelSerializer):
                 message=("Already Liked the post once")
             )
         ] 
+        
     def create(self, validated_data):
         validated_data['user'] = self.context.get('user')
-        print(validated_data)
-        print(self.context)
         return super().create(validated_data)   
+    
+    
     # def to_internal_value(self, data):
     #     user = Token.objects.get(key=self.context["request"].auth.key).user
     #     mutable_data = data.copy()

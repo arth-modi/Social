@@ -123,6 +123,7 @@ class Likeview(viewsets.ModelViewSet):
         context = super().get_serializer_context()
         user = Token.objects.get(key=self.request.auth.key).user
         context.update({'user': user})
+        # print(context)
         return context
     # def create(self, request, *args, **kwargs):
     #     user_id = Token.objects.get(key=request.auth.key).user_id
@@ -139,15 +140,12 @@ class Likeview(viewsets.ModelViewSet):
 @api_view(['DELETE',])
 def remove_like(request):
     if request.method == 'DELETE':
-        user_id = Token.objects.get(key=request.auth.key).user_id
-        if int(user_id)== int(request.data.get('user')):
-            if Like.objects.filter(user=request.data.get('user'), post=request.data.get('post')).exists():
-                Like.objects.filter(user=request.data.get('user'), post=request.data.get('post')).delete()
-                return Response({'message':'Unlike'},status=status.HTTP_204_NO_CONTENT)
-            else:
-                return Response("Already didn't like the post")
+        user_id = int(Token.objects.get(key=request.auth.key).user_id)
+        if Like.objects.filter(user=user_id, post=request.data.get('post')).exists():
+            Like.objects.filter(user=user_id, post=request.data.get('post')).delete()
+            return Response({'message':'Unlike'},status=status.HTTP_204_NO_CONTENT)
         else:
-            return Response("Not a Valid user Id", status=status.HTTP_401_UNAUTHORIZED)    
+            return Response("Already didn't like the post")   
 
     
     
