@@ -59,15 +59,21 @@ class Logoutview(generics.DestroyAPIView):
 
 class Postview(viewsets.ModelViewSet):
     queryset = Post.objects.prefetch_related('post_comment', 'post_like').all()
-    serializer_class = PostSerializer
+    # serializer_class = PostSerializer
     throttle_classes = [Throttle]
     filterset_fields=['title', 'caption', 'tags', 'user']
     search_fields = ['title', 'tags']
     
+    def get_serializer_class(self):
+        if self.request.method=="GET":
+            return PostListSerializer
+        return PostCreateSerializer
+    
     def get_serializer_context(self):
         context = super().get_serializer_context()
         user = Token.objects.get(key=self.request.auth.key).user
-        context['user'] = user
+        # context['user'] = user
+        context.update({'user': user})
         # print(context['user'])
         return context
     # def create(self, request, *args, **kwargs):

@@ -5,6 +5,11 @@ from rest_framework.authtoken.models import Token
 from django.core.mail import EmailMessage
 from django.conf import settings
 
+class UserSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = CustomUser
+        exclude = ['password','is_staff', 'is_active', 'user_permissions', 'groups', 'is_superuser', 'last_login']
 class RegisterSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(required=True, write_only = True)
     
@@ -36,32 +41,49 @@ class RegisterSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Email Already Registered Use new email or Login")
         return data
 
-class PostSerializer(serializers.ModelSerializer):
-    # user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), write_only=True)
+class PostListSerializer(serializers.ModelSerializer):
     comment_count = serializers.SerializerMethodField()
     like_count = serializers.SerializerMethodField()
-    user = serializers.SerializerMethodField()
+    user = UserSerializer()
     
     class Meta:
         model = Post
         fields = ['title', 'image', 'caption', 'tags', 'user', 'comment_count', 'like_count']
+    
+    def get_comment_count(self, obj):
+        return obj.post_comment.count()
+    
+    def get_like_count(self, obj):
+        return obj.post_like.count()       
+    
+class PostCreateSerializer(serializers.ModelSerializer):
+    # user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), write_only=True)
+    # comment_count = serializers.SerializerMethodField()
+    # like_count = serializers.SerializerMethodField()
+    # user = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Post
+        fields = ['title', 'image', 'caption', 'tags', 'user']
     
     # def save(self):
     #     user = Post(user=self.context['user'])
     #     user.save()
     #     return user
     
-    def get_comment_count(self, obj):
-        return obj.post_comment.count()
+    # def get_comment_count(self, obj):
+    #     return obj.post_comment.count()
     
-    def get_like_count(self, obj):
-        return obj.post_like.count()    
+    # def get_like_count(self, obj):
+    #     return obj.post_like.count()    
     
-    def get_user(self, obj):
-        return self.context.get('user').id    
+    # def get_user(self, obj):
+    #     return self.context.get('user').id    
     
     def create(self, validated_data):
         validated_data['user'] = self.context.get('user')
+        print(validated_data)
+        print(self.context)
         return super().create(validated_data)
     # def create(self, validated_data):
     #     validated_data['user'] = int(Token.objects.get(key=self.context["request"].auth.key).user_id)
