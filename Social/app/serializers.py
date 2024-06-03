@@ -19,7 +19,7 @@ class RegisterSerializer(serializers.ModelSerializer):
                              last_name=self.validated_data['last_name'],
                              mobile=self.validated_data['mobile'],
                              username=self.validated_data['username'], 
-                       email=self.validated_data['email'],)
+                             email=self.validated_data['email'],)
         email = EmailMessage("Welcome to Social Media App",
                              f"Hi {self.validated_data['first_name']}, thank you for registering in Social Media App.",
                             settings.EMAIL_HOST_USER, [self.validated_data['email']])
