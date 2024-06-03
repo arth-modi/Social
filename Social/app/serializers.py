@@ -57,58 +57,36 @@ class PostListSerializer(serializers.ModelSerializer):
         return obj.post_like.count()       
     
 class PostCreateSerializer(serializers.ModelSerializer):
-    # user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), write_only=True)
-    # comment_count = serializers.SerializerMethodField()
-    # like_count = serializers.SerializerMethodField()
-    # user = serializers.SerializerMethodField()
     
     class Meta:
         model = Post
         fields = ['title', 'image', 'caption', 'tags', 'user']
-    
-    # def save(self):
-    #     user = Post(user=self.context['user'])
-    #     user.save()
-    #     return user
-    
-    # def get_comment_count(self, obj):
-    #     return obj.post_comment.count()
-    
-    # def get_like_count(self, obj):
-    #     return obj.post_like.count()    
-    
-    # def get_user(self, obj):
-    #     return self.context.get('user').id    
     
     def create(self, validated_data):
         validated_data['user'] = self.context.get('user')
         print(validated_data)
         print(self.context)
         return super().create(validated_data)
-    # def create(self, validated_data):
-    #     validated_data['user'] = int(Token.objects.get(key=self.context["request"].auth.key).user_id)
-    #     instance=super().create(validated_data)
-    # def to_internal_value(self, data):
-    #     user = Token.objects.get(key=self.context["request"].auth.key).user
-    #     mutable_data = data.copy()
-    #     mutable_data['user'] = user.id
-    #     return super().to_internal_value(mutable_data)   
-        # request.user.id 
 
 class CommentSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), write_only=True)
+    # user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), write_only=True)
     class Meta:
         model = Comment
         fields = ['post', 'text', 'user']
     
-    def to_internal_value(self, data):
-        user = Token.objects.get(key=self.context["request"].auth.key).user
-        mutable_data = data.copy()
-        mutable_data['user'] = user.id
-        return super().to_internal_value(mutable_data) 
+    def create(self, validated_data):
+        validated_data['user'] = self.context.get('user')
+        print(validated_data)
+        print(self.context)
+        return super().create(validated_data)
+    # def to_internal_value(self, data):
+    #     user = Token.objects.get(key=self.context["request"].auth.key).user
+    #     mutable_data = data.copy()
+    #     mutable_data['user'] = user.id
+    #     return super().to_internal_value(mutable_data) 
 
 class LikeSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), write_only=True)
+    # user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), write_only=True)
     class Meta:
         model = Like
         fields = ['user', 'post']
@@ -119,12 +97,16 @@ class LikeSerializer(serializers.ModelSerializer):
                 message=("Already Liked the post once")
             )
         ] 
-        
-    def to_internal_value(self, data):
-        user = Token.objects.get(key=self.context["request"].auth.key).user
-        mutable_data = data.copy()
-        mutable_data['user'] = user.id
-        return super().to_internal_value(mutable_data)  
+    def create(self, validated_data):
+        validated_data['user'] = self.context.get('user')
+        print(validated_data)
+        print(self.context)
+        return super().create(validated_data)   
+    # def to_internal_value(self, data):
+    #     user = Token.objects.get(key=self.context["request"].auth.key).user
+    #     mutable_data = data.copy()
+    #     mutable_data['user'] = user.id
+    #     return super().to_internal_value(mutable_data)  
         
         
         

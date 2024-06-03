@@ -9,7 +9,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework import status, viewsets, generics, exceptions, authentication
 from django.contrib.auth import authenticate, get_user_model
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
-from rest_framework.decorators import api_view, permission_classes, throttle_classes
+from rest_framework.decorators import api_view, permission_classes, throttle_classes, action
 
 class Throttle(UserRateThrottle):
   rate = '100/day'
@@ -65,17 +65,21 @@ class Postview(viewsets.ModelViewSet):
     search_fields = ['title', 'tags']
     
     def get_serializer_class(self):
-        if self.request.method=="GET":
+        if self.action in ["listall", "retrieve"]:
             return PostListSerializer
         return PostCreateSerializer
     
     def get_serializer_context(self):
         context = super().get_serializer_context()
         user = Token.objects.get(key=self.request.auth.key).user
-        # context['user'] = user
         context.update({'user': user})
-        # print(context['user'])
         return context
+    
+    @action(detail=False, methods=['get'])
+    def listall(self, request):
+        queryset = Post.objects.all().order_by('id')
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     # def create(self, request, *args, **kwargs):
     #     user_id = Token.objects.get(key=request.auth.key).user_id
     #     # print(request.data.get('user'), user_id)
@@ -93,6 +97,12 @@ class Commentview(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     throttle_classes = [Throttle]
     filterset_fields=['user', 'post', 'text']
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        user = Token.objects.get(key=self.request.auth.key).user
+        context.update({'user': user})
+        print(context)
+        return context
     # def create(self, request, *args, **kwargs):
     #     user_id = Token.objects.get(key=request.auth.key).user_id
     #     # print(request.data.get('user'), user_id)
@@ -109,6 +119,11 @@ class Likeview(viewsets.ModelViewSet):
     queryset = Like.objects.all()
     serializer_class = LikeSerializer
     filterset_fields=['user', 'post']
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        user = Token.objects.get(key=self.request.auth.key).user
+        context.update({'user': user})
+        return context
     # def create(self, request, *args, **kwargs):
     #     user_id = Token.objects.get(key=request.auth.key).user_id
     #     # print(request.data.get('user'), user_id)

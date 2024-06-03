@@ -21,12 +21,12 @@ class Post(models.Model):
         return self.title
     
 class Comment(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='user_comment', related_query_name='user_comment')
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='user_comment', related_query_name='user_comment', null=True, blank=True)
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='post_comment', related_query_name='post_comment')
     text = models.TextField()
 
 class Like(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='user_like', related_query_name='user_like')
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='user_like', related_query_name='user_like', null=True, blank=True)
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='post_like', related_query_name='post_like')
     
     class Meta:
