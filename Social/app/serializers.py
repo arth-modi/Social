@@ -9,13 +9,17 @@ class RegisterSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(required=True, write_only = True)
     
     class Meta:
-        model = User
-        fields = ['first_name', 'last_name', 'username', 'email','password', 'confirm_password']
+        model = CustomUser
+        fields = ['first_name', 'last_name', 'username', 'email','mobile','password', 'confirm_password']
         extra_kwargs = {'password': {'write_only': True}}
         
     def save(self):
-        account = User(username=self.validated_data['username'], 
-                       email=self.validated_data['email'])
+        # account = CustomUser(**self.validated_data)
+        account = CustomUser(first_name=self.validated_data['first_name'],
+                             last_name=self.validated_data['last_name'],
+                             mobile=self.validated_data['mobile'],
+                             username=self.validated_data['username'], 
+                       email=self.validated_data['email'],)
         email = EmailMessage("Welcome to Social Media App",
                              f"Hi {self.validated_data['first_name']}, thank you for registering in Social Media App.",
                             settings.EMAIL_HOST_USER, [self.validated_data['email']])
@@ -28,17 +32,24 @@ class RegisterSerializer(serializers.ModelSerializer):
         if data['password'] != data['confirm_password']:
             raise serializers.ValidationError("Password and Confirm Password should be same.")
         
-        if User.objects.filter(email=data['email']).exists():
+        if CustomUser.objects.filter(email=data['email']).exists():
             raise serializers.ValidationError("Email Already Registered Use new email or Login")
         return data
 
 class PostSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), write_only=True)
+    # user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), write_only=True)
     comment_count = serializers.SerializerMethodField()
     like_count = serializers.SerializerMethodField()
+    user = serializers.SerializerMethodField()
+    
     class Meta:
         model = Post
         fields = ['title', 'image', 'caption', 'tags', 'user', 'comment_count', 'like_count']
+    
+    # def save(self):
+    #     user = Post(user=self.context['user'])
+    #     user.save()
+    #     return user
     
     def get_comment_count(self, obj):
         return obj.post_comment.count()
@@ -46,9 +57,12 @@ class PostSerializer(serializers.ModelSerializer):
     def get_like_count(self, obj):
         return obj.post_like.count()    
     
+    def get_user(self, obj):
+        return self.context.get('user').id    
+    
     def create(self, validated_data):
-            user = self.context['user']
-            return Post(**validated_data, user=user)
+        validated_data['user'] = self.context.get('user')
+        return super().create(validated_data)
     # def create(self, validated_data):
     #     validated_data['user'] = int(Token.objects.get(key=self.context["request"].auth.key).user_id)
     #     instance=super().create(validated_data)
@@ -60,7 +74,7 @@ class PostSerializer(serializers.ModelSerializer):
         # request.user.id 
 
 class CommentSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), write_only=True)
+    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), write_only=True)
     class Meta:
         model = Comment
         fields = ['post', 'text', 'user']
@@ -72,7 +86,7 @@ class CommentSerializer(serializers.ModelSerializer):
         return super().to_internal_value(mutable_data) 
 
 class LikeSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), write_only=True)
+    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), write_only=True)
     class Meta:
         model = Like
         fields = ['user', 'post']

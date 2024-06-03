@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     # 'csrf_token',
     'rest_framework',
     'rest_framework.authtoken',
-
+    'phonenumber_field',
 ]
 
 MIDDLEWARE = [
@@ -82,7 +82,7 @@ WSGI_APPLICATION = 'Social.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'SocialMediaDB',
+        'NAME': 'SocialDB',
         'USER': 'postgres',
         'PASSWORD': 'password',
         'HOST': 'localhost',
@@ -90,6 +90,7 @@ DATABASES = {
     }
 }
 
+PHONENUMBER_DEFAULT_REGION= "IN"
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -142,10 +143,12 @@ REST_FRAMEWORK = {
 ],
 }
 
+AUTH_USER_MODEL = "app.CustomUser"
+
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = "global.studio17@gmail.com"
-EMAIL_HOST_PASSWORD = "fucyixfgoqowtdhi"
+EMAIL_HOST_PASSWORD = ""
 EMAIL_USE_SSL = False
