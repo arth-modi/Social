@@ -38,7 +38,6 @@ class LoginAuthentication(generics.CreateAPIView):
         username = request.data.get('username')
         password = request.data.get('password')
         user = None
-        
         if not user:
             user = authenticate(username=username, password=password)
 
@@ -125,17 +124,7 @@ class Likeview(viewsets.ModelViewSet):
         context.update({'user': user})
         # print(context)
         return context
-    # def create(self, request, *args, **kwargs):
-    #     user_id = Token.objects.get(key=request.auth.key).user_id
-    #     # print(request.data.get('user'), user_id)
-    #     if int(user_id) == int(request.data.get('user')):
-    #         serializer = self.get_serializer(data=request.data)
-    #         serializer.is_valid(raise_exception=True)
-    #         self.perform_create(serializer)
-    #         headers = self.get_success_headers(serializer.data)
-    #         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-    #     else:
-    #         return Response("Enter Valid User Id", status=status.HTTP_401_UNAUTHORIZED)
+    
     
 @api_view(['DELETE',])
 def remove_like(request):

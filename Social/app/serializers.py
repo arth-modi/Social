@@ -1,7 +1,7 @@
 from rest_framework import serializers, validators
 from .models import *
-from django.contrib.auth.models import User
-from rest_framework.authtoken.models import Token
+# from django.contrib.auth.models import User
+# from rest_framework.authtoken.models import Token
 from django.core.mail import EmailMessage
 from django.conf import settings
 
@@ -64,8 +64,8 @@ class PostCreateSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         validated_data['user'] = self.context.get('user')
-        print(validated_data)
-        print(self.context)
+        # print(validated_data)
+        # print(self.context)
         return super().create(validated_data)
 
 class CommentSerializer(serializers.ModelSerializer):
