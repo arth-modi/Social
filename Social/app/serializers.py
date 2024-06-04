@@ -83,18 +83,23 @@ class CommentSerializer(serializers.ModelSerializer):
 class LikeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Like
-        fields = ['post', 'user']
+        fields = ['post', 'user_id']
         validators = [
             validators.UniqueTogetherValidator(
                 queryset=model.objects.all(),
-                fields=('user', 'post'),
+                fields=('user_id', 'post'),
                 message=("Already Liked the post once")
             )
         ] 
         
-    def create(self, validated_data):
-        validated_data['user'] = self.context.get('user')
-        return super().create(validated_data)   
+    # def validate(self, data):
+    #     print(data)
+    #     return data
+       
+    # def create(self, validated_data):
+    #     print("1.......")
+    #     validated_data['user'] = self.context.get('user')
+    #     return super().create(validated_data)   
     
     
     # def to_internal_value(self, data):

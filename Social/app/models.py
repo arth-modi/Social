@@ -11,7 +11,7 @@ class CustomUser(AbstractUser):
     
 class Post(models.Model):
     title = models.CharField(max_length=150)
-    image = models.ImageField(upload_to='Image')
+    image = models.ImageField(upload_to='Image', null=True, blank=True)
     caption = models.TextField(null=True, blank=True)
     tags = models.CharField(max_length=150)
     posted_at = models.DateTimeField(auto_now_add=True)
@@ -32,3 +32,5 @@ class Like(models.Model):
     
     class Meta:
         unique_together = ('user','post')
+        
+    
