@@ -6,10 +6,11 @@ from django.core.mail import EmailMessage
 from django.conf import settings
 
 class UserSerializer(serializers.ModelSerializer):
-    
+    full_name = serializers.CharField(source='get_full_name')
+
     class Meta:
         model = CustomUser
-        exclude = ['password','is_staff', 'is_active', 'user_permissions', 'groups', 'is_superuser', 'last_login']
+        exclude = ['password','is_staff', 'is_active', 'user_permissions', 'groups', 'is_superuser', 'last_login', 'first_name', 'last_name']
 class RegisterSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(required=True, write_only = True)
     
@@ -28,9 +29,9 @@ class RegisterSerializer(serializers.ModelSerializer):
         email = EmailMessage("Welcome to Social Media App",
                              f"Hi {self.validated_data['first_name']}, thank you for registering in Social Media App.",
                             settings.EMAIL_HOST_USER, [self.validated_data['email']])
-        email.send()
         account.set_password(self.validated_data['password'])
         account.save()
+        email.send()
         return account
         
     def validate(self, data):
@@ -75,8 +76,8 @@ class CommentSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         validated_data['user'] = self.context.get('user')
-        print(validated_data)
-        print(self.context)
+        # print(validated_data)
+        # print(self.context)
         return super().create(validated_data)
 
 class LikeSerializer(serializers.ModelSerializer):

@@ -6,14 +6,14 @@ from .models import *
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
-from rest_framework import status, viewsets, generics, exceptions, authentication
+from rest_framework import status, viewsets, generics, exceptions, authentication, filters
 from django.contrib.auth import authenticate, get_user_model
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.decorators import api_view, permission_classes, throttle_classes, action
 
 class Throttle(UserRateThrottle):
   rate = '100/day'
-
+filters.BaseFilterBackend
 class Registerview(generics.CreateAPIView):
     queryset=CustomUser.objects.all()
     permission_classes=[AllowAny]  
@@ -64,7 +64,7 @@ class Postview(viewsets.ModelViewSet):
     search_fields = ['title', 'tags']
     
     def get_serializer_class(self):
-        if self.action in ["listall", "retrieve"]:
+        if self.action in ["listall", "retrieve", "list"]:
             return PostListSerializer
         return PostCreateSerializer
     
