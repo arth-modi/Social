@@ -6,7 +6,7 @@ from .models import *
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
-from rest_framework import status, viewsets, generics, exceptions, authentication, filters
+from rest_framework import status, viewsets, generics, exceptions, authentication, filters, serializers
 from django.contrib.auth import authenticate, get_user_model
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.decorators import api_view, permission_classes, throttle_classes, action
@@ -59,14 +59,17 @@ class HasImageFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
 
         hasimg = request.query_params.get('hasimg')
-        # if
-        if hasimg.lower() == "true":
-            queryset=queryset.exclude(image__isnull=True).exclude(image="")
-            
-        if hasimg.lower()=="false":
-            queryset=queryset.filter(image="")
-            print(queryset)
+        if hasimg is not None:
+            if hasimg.lower() == "true":
+                queryset=queryset.exclude(image__isnull=True).exclude(image="")
+                
+            elif hasimg.lower()=="false":
+                queryset=queryset.filter(image="")
+                # print(queryset)
+            else:
+                raise serializers.ValidationError("Expected true or false")
         return queryset
+    
 class Postview(viewsets.ModelViewSet):
     queryset = Post.objects.prefetch_related('post_comment', 'post_like').all()
     # serializer_class = PostSerializer
