@@ -1,16 +1,16 @@
-# from django.core.mail import EmailMessage
 from rest_framework.throttling import UserRateThrottle
 from django.conf import settings
 from .serializers import *
 from .models import *
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
-# from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from rest_framework import status, viewsets, generics, exceptions, authentication, filters, serializers
 from django.contrib.auth import authenticate, get_user_model
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.decorators import api_view, permission_classes, throttle_classes, action
+from rest_framework.pagination import LimitOffsetPagination
+
 
 class Throttle(UserRateThrottle):
   rate = '100/day'
@@ -20,22 +20,11 @@ class Registerview(generics.CreateAPIView):
     permission_classes=[AllowAny]  
     throttle_classes=[Throttle]
     serializer_class=RegisterSerializer
-    
-    # def post(self,request):
-    #     email = EmailMessage("Welcome to Social Media App",f"Hi {request.data.get('first_name')}, thank you for registering in Social Media App.",
-    #     settings.EMAIL_HOST_USER, [request.data.get('email')])
-    #     serializer = RegisterSerializer(data=request.data)
-    #     if serializer.is_valid(raise_exception=True):
-    #         email.send()
-    #         serializer.save()
-    #         return Response({'message': 'User Created', 'Data':serializer.data, 
-    #                             'id': User.objects.get(username=request.data.get('username')).id}, 
-    #                         status=status.HTTP_201_CREATED)
 
 class LoginAuthentication(generics.CreateAPIView):
     permission_classes=[AllowAny]
     def create(self, request, *args, **kwargs):
-        # Get the username and password
+
         username = request.data.get('username')
         password = request.data.get('password')
         user = None
@@ -71,10 +60,12 @@ class HasImageFilterBackend(filters.BaseFilterBackend):
                 raise serializers.ValidationError("Expected true or false")
         return queryset
     
+class myPagination(LimitOffsetPagination):
+    pass
 class Postview(viewsets.ModelViewSet):
     queryset = Post.objects.prefetch_related('post_comment', 'post_like').all()
-    # serializer_class = PostSerializer
     throttle_classes = [Throttle]
+    # pagination_class=[myPagination]
     filter_backends=[HasImageFilterBackend, DjangoFilterBackend, filters.SearchFilter]
     filterset_fields=['title', 'caption', 'tags', 'user']
     search_fields = ['title', 'tags']
@@ -95,18 +86,7 @@ class Postview(viewsets.ModelViewSet):
         queryset = Post.objects.all().order_by('id')
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    # def create(self, request, *args, **kwargs):
-    #     user_id = Token.objects.get(key=request.auth.key).user_id
-    #     # print(request.data.get('user'), user_id)
-    #     if int(user_id) == int(request.data.get('user')):
-    #         serializer = self.get_serializer(data=request.data)
-    #         serializer.is_valid(raise_exception=True)
-    #         self.perform_create(serializer)
-    #         headers = self.get_success_headers(serializer.data)
-    #         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-    #     else:
-    #         return Response("Enter Valid User Id", status=status.HTTP_400_BAD_REQUEST)
-
+    
 class Commentview(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
@@ -118,18 +98,6 @@ class Commentview(viewsets.ModelViewSet):
         context.update({'user': user})
         # print(context)
         return context
-    # def create(self, request, *args, **kwargs):
-    #     user_id = Token.objects.get(key=request.auth.key).user_id
-    #     # print(request.data.get('user'), user_id)
-    #     if int(user_id) == int(request.data.get('user')):
-    #         serializer = self.get_serializer(data=request.data)
-    #         serializer.is_valid(raise_exception=True)
-    #         self.perform_create(serializer)
-    #         headers = self.get_success_headers(serializer.data)
-    #         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-    #     else:
-    #         return Response("Enter Valid User Id", status=status.HTTP_401_UNAUTHORIZED)
-
 class Likeview(viewsets.ModelViewSet):
     queryset = Like.objects.all()
     serializer_class = LikeSerializer
@@ -139,18 +107,7 @@ class Likeview(viewsets.ModelViewSet):
     #     user = Token.objects.get(key=self.request.auth.key).user.id
     #     context.update({'user': user})
     #     # print(context)
-    #     return context
-    
-    # def create(self, request, *args, **kwargs):
-    #     requestdata = request.data.copy()
-    #     requestdata['user_id']= Token.objects.get(key=self.request.auth.key).user.pk
-    #     print(requestdata)
-    #     serializer = self.get_serializer(data=requestdata)
-    #     serializer.is_valid(raise_exception=True)
-    #     self.perform_create(serializer)
-    #     print(serializer.errors)
-    #     headers = self.get_success_headers(serializer.data)
-    #     return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)        
+    #     return context     
     
 @api_view(['DELETE',])
 def remove_like(request):
@@ -161,30 +118,3 @@ def remove_like(request):
             return Response({'message':'Unlike'},status=status.HTTP_204_NO_CONTENT)
         else:
             return Response("Already didn't like the post")   
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    # def perform_create(self, serializer):
-    #     serializer.save(user=self.request.user)
-    #     return super().perform_create(serializer)
-    
-    
