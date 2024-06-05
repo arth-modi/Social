@@ -62,7 +62,7 @@ class HasImageFilterBackend(filters.BaseFilterBackend):
         hasimg = request.query_params.get('hasimg')
         if hasimg is not None:
             if hasimg.lower() == "true":
-                queryset=queryset.exclude(image__isnull=True).exclude(image="")
+                queryset=queryset.exclude(image="")
                 
             elif hasimg.lower()=="false":
                 queryset=queryset.filter(image="")
@@ -134,23 +134,23 @@ class Likeview(viewsets.ModelViewSet):
     queryset = Like.objects.all()
     serializer_class = LikeSerializer
     filterset_fields=['user', 'post']
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        user = Token.objects.get(key=self.request.auth.key).user.id
-        context.update({'user': user})
-        # print(context)
-        return context
+    # def get_serializer_context(self):
+    #     context = super().get_serializer_context()
+    #     user = Token.objects.get(key=self.request.auth.key).user.id
+    #     context.update({'user': user})
+    #     # print(context)
+    #     return context
     
-    def create(self, request, *args, **kwargs):
-        requestdata = request.data.copy()
-        requestdata['user_id']= Token.objects.get(key=self.request.auth.key).user.pk
-        print(requestdata)
-        serializer = self.get_serializer(data=requestdata)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        print(serializer.errors)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)        
+    # def create(self, request, *args, **kwargs):
+    #     requestdata = request.data.copy()
+    #     requestdata['user_id']= Token.objects.get(key=self.request.auth.key).user.pk
+    #     print(requestdata)
+    #     serializer = self.get_serializer(data=requestdata)
+    #     serializer.is_valid(raise_exception=True)
+    #     self.perform_create(serializer)
+    #     print(serializer.errors)
+    #     headers = self.get_success_headers(serializer.data)
+    #     return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)        
     
 @api_view(['DELETE',])
 def remove_like(request):

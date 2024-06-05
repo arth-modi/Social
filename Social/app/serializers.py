@@ -1,7 +1,7 @@
 from rest_framework import serializers, validators
 from .models import *
 # from django.contrib.auth.models import User
-# from rest_framework.authtoken.models import Token
+from rest_framework.authtoken.models import Token
 from django.core.mail import EmailMessage
 from django.conf import settings
 
@@ -58,16 +58,16 @@ class PostListSerializer(serializers.ModelSerializer):
         return obj.post_like.count()       
     
 class PostCreateSerializer(serializers.ModelSerializer):
-    
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
     class Meta:
         model = Post
         fields = ['title', 'image', 'caption', 'tags', 'user']
     
-    def create(self, validated_data):
-        validated_data['user'] = self.context.get('user')
-        # print(validated_data)
-        # print(self.context)
-        return super().create(validated_data)
+    # def create(self, validated_data):
+    #     validated_data['user'] = self.context.get('user')
+    #     # print(validated_data)
+    #     # print(self.context)
+    #     return super().create(validated_data)
 
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -81,32 +81,33 @@ class CommentSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 class LikeSerializer(serializers.ModelSerializer):
+    # user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    # user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
     class Meta:
         model = Like
-        fields = ['post', 'user_id']
+        fields = ['post', 'user']
         validators = [
             validators.UniqueTogetherValidator(
                 queryset=model.objects.all(),
-                fields=('user_id', 'post'),
+                fields=('user', 'post'),
                 message=("Already Liked the post once")
             )
         ] 
         
-    # def validate(self, data):
-    #     print(data)
-    #     return data
-       
-    # def create(self, validated_data):
-    #     print("1.......")
-    #     validated_data['user'] = self.context.get('user')
-    #     return super().create(validated_data)   
-    
-    
-    # def to_internal_value(self, data):
-    #     user = Token.objects.get(key=self.context["request"].auth.key).user
-    #     mutable_data = data.copy()
-    #     mutable_data['user'] = user.id
-    #     return super().to_internal_value(mutable_data)  
+        # def validate(self, data):
+        #     print(data)
+        #     return data
+        
+        # def create(self, validated_data):
+        #     print("1.......")
+        #     validated_data['user'] = self.context.get('user')
+        #     return super().create(validated_data)   
+      
+    def to_internal_value(self, data):
+        user = Token.objects.get(key=self.context["request"].auth.key).user
+        mutable_data = data.copy()
+        mutable_data['user'] = user.id
+        return super().to_internal_value(mutable_data)  
         
         
         
