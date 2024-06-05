@@ -1,10 +1,11 @@
-from django.core.mail import EmailMessage
+# from django.core.mail import EmailMessage
 from rest_framework.throttling import UserRateThrottle
 from django.conf import settings
 from .serializers import *
 from .models import *
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
-from rest_framework.views import APIView
+# from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from rest_framework import status, viewsets, generics, exceptions, authentication, filters, serializers
 from django.contrib.auth import authenticate, get_user_model
@@ -74,7 +75,7 @@ class Postview(viewsets.ModelViewSet):
     queryset = Post.objects.prefetch_related('post_comment', 'post_like').all()
     # serializer_class = PostSerializer
     throttle_classes = [Throttle]
-    filter_backends=[HasImageFilterBackend]
+    filter_backends=[HasImageFilterBackend, DjangoFilterBackend, filters.SearchFilter]
     filterset_fields=['title', 'caption', 'tags', 'user']
     search_fields = ['title', 'tags']
     
@@ -115,7 +116,7 @@ class Commentview(viewsets.ModelViewSet):
         context = super().get_serializer_context()
         user = Token.objects.get(key=self.request.auth.key).user
         context.update({'user': user})
-        print(context)
+        # print(context)
         return context
     # def create(self, request, *args, **kwargs):
     #     user_id = Token.objects.get(key=request.auth.key).user_id
