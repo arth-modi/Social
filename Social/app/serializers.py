@@ -68,7 +68,28 @@ class PostCreateSerializer(serializers.ModelSerializer):
 class PostSerializer(serializers.Serializer):
     title = serializers.CharField(max_length=150)
     image = serializers.ImageField()
-    caption = serializers.CharField(max_length=150)
+    caption = serializers.CharField()
+    tags = serializers.CharField()
+    user = serializers.CharField(required=False)
+    
+    def create(self, validated_data):
+        print(validated_data)
+        print(self.context.get('user'))
+        return Post.objects.create(title = validated_data['title'],
+                    image = validated_data['image'],
+                    caption = validated_data['caption'],
+                    tags = validated_data['tags'],
+                    user = self.context.get('user')
+                    )
+
+    def update(self, instance, validated_data):
+        instance.title = validated_data.get('title', instance.title)
+        instance.image = validated_data.get('image', instance.image)
+        instance.caption = validated_data.get('caption', instance.caption)
+        instance.tags = validated_data.get('tags', instance.tags)
+        instance.user = self.context.get('user')
+        instance.save()
+        return instance
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment

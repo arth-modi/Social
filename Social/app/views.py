@@ -9,12 +9,11 @@ from rest_framework import status, viewsets, generics, exceptions, authenticatio
 from django.contrib.auth import authenticate, get_user_model
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.decorators import api_view, permission_classes, throttle_classes, action
-from rest_framework.pagination import LimitOffsetPagination
-
+from .pagination import myPagination
+from .filters import HasImageFilterBackend
 
 class Throttle(UserRateThrottle):
   rate = '100/day'
-filters.BaseFilterBackend
 class Registerview(generics.CreateAPIView):
     queryset=CustomUser.objects.all()
     permission_classes=[AllowAny]  
@@ -45,27 +44,11 @@ class Logoutview(generics.DestroyAPIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-class HasImageFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
 
-        hasimg = request.query_params.get('hasimg')
-        if hasimg is not None:
-            if hasimg.lower() == "true":
-                queryset=queryset.exclude(image="")
-                
-            elif hasimg.lower()=="false":
-                queryset=queryset.filter(image="")
-                # print(queryset)
-            else:
-                raise serializers.ValidationError("Expected true or false")
-        return queryset
-    
-class myPagination(LimitOffsetPagination):
-    pass
 class Postview(viewsets.ModelViewSet):
     queryset = Post.objects.prefetch_related('post_comment', 'post_like').all()
     throttle_classes = [Throttle]
-    # pagination_class=[myPagination]
+    pagination_class=myPagination
     filter_backends=[HasImageFilterBackend, DjangoFilterBackend, filters.SearchFilter]
     filterset_fields=['title', 'caption', 'tags', 'user']
     search_fields = ['title', 'tags']
@@ -73,7 +56,7 @@ class Postview(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action in ["listall", "retrieve", "list"]:
             return PostListSerializer
-        return PostCreateSerializer
+        return PostSerializer
     
     def get_serializer_context(self):
         context = super().get_serializer_context()
