@@ -73,8 +73,6 @@ class PostSerializer(serializers.Serializer):
     user = serializers.CharField(required=False)
     
     def create(self, validated_data):
-        print(validated_data)
-        print(self.context.get('user'))
         return Post.objects.create(title = validated_data['title'],
                     image = validated_data['image'],
                     caption = validated_data['caption'],
@@ -90,6 +88,8 @@ class PostSerializer(serializers.Serializer):
         instance.user = self.context.get('user')
         instance.save()
         return instance
+    
+    
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment

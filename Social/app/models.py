@@ -10,12 +10,12 @@ class CustomUser(AbstractUser):
     
 class Post(models.Model):
     title = models.CharField(max_length=150)
-    image = models.ImageField(upload_to='Image', null=True, blank=True)
+    image = models.FileField(upload_to='Image', null=True, blank=True)
     caption = models.TextField(null=True, blank=True)
     tags = models.CharField(max_length=150)
     posted_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE,related_name='user_related', related_query_name='user_related', null=True, blank=True)
 
     def __str__(self):
         return self.title
