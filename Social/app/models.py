@@ -7,8 +7,6 @@ from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator
-from file_validator.models import FileSizeValidator
-from rest_framework import validators
 from os.path import splitext
 # Create your models here.
 
@@ -37,24 +35,6 @@ class CustomUser(AbstractUser):
     last_name=models.CharField(max_length=150,null=True, blank=True)
     email=models.EmailField(null=True, blank=True, validators=[email_check])
     mobile=PhoneNumberField(null=True, blank=True)
-        
-# class Image(FileField):
-    
-#     def clean(self, *args, **kwargs):
-#         data = super(Image, self).clean(*args, **kwargs)
-
-#         file = data.file
-#         print(file)
-#         if file:
-#             content_type = file.content_type
-
-#             if content_type in settings.CONTENT_TYPES:
-#                 if file._size > int(settings.MAX_UPLOAD_SIZE):
-#                     raise ValidationError(_('Please keep filesize under %s. Current filesize %s') % (filesizeformat(self.max_upload_size), filesizeformat(file._size)))
-#             else:
-#                 raise ValidationError(_('Filetype not supported.'))
-
-#         return data
     
 class Post(models.Model):
     title = models.CharField(max_length=150)

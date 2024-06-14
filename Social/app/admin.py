@@ -10,17 +10,14 @@ from import_export import resources
 
 class PostResource(resources.ModelResource):
     user = Field(attribute="user__username",column_name='user')
-    tags = Field(attribute="tags",column_name='tagss')
-
     class Meta:
         model = Post
-        fields = ["id", "user", "title","tagss",'image','posted_at']
+        fields = ["id", "user", "title","tags",'image','posted_at']
         
-class PostInline(admin.StackedInline):
+class PostInline(admin.TabularInline):
     model = Post
     per_page =5
 # Register your models here.
-# admin.site.register(Post)
 @admin.register(Post)
 class Postadmin(ImportExportActionModelAdmin):
     form= SocialAdminForm
@@ -41,10 +38,6 @@ class Postadmin(ImportExportActionModelAdmin):
     autocomplete_fields = ["user"]
     date_hierarchy='posted_at'
     def get_ordering(self, request):
-        # if request.user.is_superuser:
-        #     return ["title", "id"]
-        # else:
-        #     return ["id"]
         return ["id"]
     @admin.action(description="Tag as Update")
     def update_tags(self, request, queryset):
@@ -52,7 +45,6 @@ class Postadmin(ImportExportActionModelAdmin):
 
 # admin.site.disable_action("delete_selected")
 
-# admin.site.register(Comment)
 @admin.register(Comment)
 class Commentadmin(admin.ModelAdmin):
     list_display=['id', 'text', 'post', 'user']
@@ -67,7 +59,6 @@ class Commentadmin(admin.ModelAdmin):
     list_per_page=5
     ordering=["id"]
     
-# admin.site.register(Like)
 @admin.register(Like)
 class Likeadmin(admin.ModelAdmin):
     list_display=['id', 'post', 'user']
@@ -80,7 +71,6 @@ class Likeadmin(admin.ModelAdmin):
     list_display_links = ["id"]
     list_select_related=['user']
     list_per_page=5
-# admin.site.register(CustomUser)
 @admin.register(CustomUser)
 class Useradmin(admin.ModelAdmin):
     list_display=["full_name", 'username', 'mobile', 'email','post_count']
