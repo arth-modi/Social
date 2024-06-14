@@ -144,8 +144,8 @@ REST_FRAMEWORK = {
 }
 
 AUTH_USER_MODEL = "app.CustomUser"
-CONTENT_TYPES = ['image/png', 'image/jpeg', 'application/pdf']
-MAX_UPLOAD_SIZE = "2621440"#50mb
+CONTENT_TYPES = ['.png', '.jpeg', '.pdf']
+MAX_UPLOAD_SIZE = "264400"
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"

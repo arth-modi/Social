@@ -23,18 +23,18 @@ class SocialAdminForm(ModelForm):
             "user": RadioSelect(),
         }
     
-    def clean_image(self):
-        image = self.cleaned_data['image']
-        try:
-            content_type = image.content_type
-            if content_type in settings.CONTENT_TYPES:
-                if image.size > int(settings.MAX_UPLOAD_SIZE):
-                    raise forms.ValidationError(_('Please keep filesize under %s. Current filesize %s') % (filesizeformat(settings.MAX_UPLOAD_SIZE), filesizeformat(image.size)))
-            else:
-                raise forms.ValidationError(_('File type is not supported'))
-            return image
-        except AttributeError:
-            return image
+    # def clean_image(self):
+    #     image = self.cleaned_data['image']
+    #     try:
+    #         content_type = image.content_type
+    #         if content_type in settings.CONTENT_TYPES:
+    #             if image.size > int(settings.MAX_UPLOAD_SIZE):
+    #                 raise forms.ValidationError(_('Please keep filesize under %s. Current filesize %s') % (filesizeformat(settings.MAX_UPLOAD_SIZE), filesizeformat(image.size)))
+    #         else:
+    #             raise forms.ValidationError(_('File type is not supported'))
+    #         return image
+    #     except AttributeError:
+    #         return image
 
     # def __init__(self, *args, **kwargs):
     #     instance = kwargs.get('instance')

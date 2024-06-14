@@ -4,15 +4,29 @@ from django.contrib import messages
 from django.utils.translation import ngettext
 from .forms import SocialAdminForm
 from import_export.admin import ImportExportActionModelAdmin
+from .pagination import myPagination
+from import_export.fields import Field
+from import_export import resources
 
-# class PostInline(admin.TabularInline):
-#     model = Post
+class PostResource(resources.ModelResource):
+    user = Field(attribute="user__username",column_name='user')
+    tags = Field(attribute="tags",column_name='tagss')
+
+    class Meta:
+        model = Post
+        fields = ["id", "user", "title","tagss",'image','posted_at']
+        
+class PostInline(admin.StackedInline):
+    model = Post
+    per_page =5
 # Register your models here.
 # admin.site.register(Post)
 @admin.register(Post)
 class Postadmin(ImportExportActionModelAdmin):
     form= SocialAdminForm
-    list_display=['id', 'title', 'posted_at', 'user']
+    resource_class=PostResource
+    list_display=['id', 'title', 'image','posted_at', 'user', 'tags']
+    empty_value_display="--"
     save_as=True
     save_as_continue=False
     # fields=[('id', 'title'), 'posted_at', 'user']
@@ -69,24 +83,31 @@ class Likeadmin(admin.ModelAdmin):
 # admin.site.register(CustomUser)
 @admin.register(CustomUser)
 class Useradmin(admin.ModelAdmin):
-    list_display=["upper_case_name", 'username', 'mobile', 'email','post_count']
+    list_display=["full_name", 'username', 'mobile', 'email','post_count']
     list_display_links = ["username"]
-    # inlines = [
-    #     PostInline,
-    # ]
+    inlines = [
+        PostInline,
+    ]
     # fields = [('first_name', 'last_name'), 'username', ]
     exclude = ["password", 'last_login']
-    empty_value_display="abc"
+    empty_value_display="----"
     search_fields=['username']
     list_filter=['username',]
     actions=["superuser_change"]
     date_hierarchy='date_joined'
     ordering=["first_name", "last_name"]
-    @admin.display(description="Name",empty_value="unknown", ordering="")
-    def upper_case_name(self, obj):
-        return f"{obj.first_name} {obj.last_name}"
+    @admin.display(description="Name", ordering="")
+    def full_name(self, obj):
+        if (obj.first_name and obj.last_name):
+            return f"{obj.first_name} {obj.last_name}"
+        elif obj.first_name:
+            return f"{obj.first_name}"
+        elif obj.last_name:
+            return f"{obj.last_name}"
+        else:
+            return "----"
     
-    @admin.display(description="No. of Posts",empty_value="0", ordering="")
+    @admin.display(description="No. of Posts", ordering="")
     def post_count(self, obj):
         return obj.user_related.count()
     
