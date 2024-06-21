@@ -3,6 +3,7 @@ from .models import *
 from rest_framework.authtoken.models import Token
 from django.core.mail import EmailMessage
 from django.conf import settings
+from app.task import send_email
 
 class UserSerializer(serializers.ModelSerializer):
     full_name = serializers.CharField(source='get_full_name')
@@ -24,12 +25,13 @@ class RegisterSerializer(serializers.ModelSerializer):
                              mobile=self.validated_data['mobile'],
                              username=self.validated_data['username'], 
                              email=self.validated_data['email'],)
-        email = EmailMessage("Welcome to Social Media App",
-                             f"Hi {self.validated_data['first_name']}, thank you for registering in Social Media App.",
-                            settings.EMAIL_HOST_USER, [self.validated_data['email']])
+        # email = EmailMessage("Welcome to Social Media App",
+        #                      f"Hi {self.validated_data['first_name']}, thank you for registering in Social Media App.",
+        #                     settings.EMAIL_HOST_USER, [self.validated_data['email']])
         account.set_password(self.validated_data['password'])
+        send_email.delay(self.validated_data['first_name'], self.validated_data['email'])
         account.save()
-        email.send()
+        # email.send()
         return account
         
     def validate(self, data):

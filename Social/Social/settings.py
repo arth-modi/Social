@@ -11,6 +11,10 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+from django.conf import settings
+import os
+from celery.schedules import crontab
+# import app.task
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -43,6 +47,8 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'phonenumber_field',
     "import_export",
+    'django_celery_results',
+    "django_celery_beat",
 ]
 
 MIDDLEWARE = [
@@ -110,6 +116,16 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": f"redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    }
+}
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
@@ -148,9 +164,40 @@ CONTENT_TYPES = ['.png', '.jpeg', '.pdf']
 MAX_UPLOAD_SIZE = "264400"
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.gmail.com"
+EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = "global.studio17@gmail.com"
 EMAIL_HOST_PASSWORD = ""
-EMAIL_USE_SSL = False
+# EMAIL_USE_SSL = False
+
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+
+# CELERY_BROKER_URL = 'amqp://guest:guest@localhost//'
+# CELERY_RESULT_BACKEND = 'rpc://'
+# CELERY_ACCEPT_CONTENT = ['json']
+# CELERY_TASK_SERIALIZER = 'json'
+# CELERY_RESULT_SERIALIZER = 'json'
+CELERY_ROUTES = {
+    'Social.task.send_email': {'queue': 'mail'},
+    'Social.task.sample_task': {'queue': 'sample'},
+    'Social.task.send_mail_beat': {'queue': 'mail_beat'},
+}
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379'
+CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Asia/Kolkata'
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+CELERY_BEAT_SCHEDULE = {
+    "sample_task": {
+        "task": "app.task.sample_task",
+        "schedule": 30,
+    },
+    "send_mail_beat": {
+        "task": "app.task.send_mail_beat",
+        "schedule": 60,
+    },
+}

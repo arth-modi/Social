@@ -19,6 +19,7 @@ class Registerview(generics.CreateAPIView):
     permission_classes=[AllowAny]  
     throttle_classes=[Throttle]
     serializer_class=RegisterSerializer
+    
 
 class LoginAuthentication(generics.CreateAPIView):
     permission_classes=[AllowAny]
