@@ -181,11 +181,15 @@ CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 # CELERY_RESULT_SERIALIZER = 'json'
 CELERY_ROUTES = {
     'Social.task.send_email': {'queue': 'mail'},
+    'Social.task.like_send_mail': {'queue': 'like_mail'},
+    'Social.task.comment_send_mail': {'queue': 'comment_mail'},
     'Social.task.sample_task': {'queue': 'sample'},
     'Social.task.send_mail_beat': {'queue': 'mail_beat'},
 }
 CELERY_BROKER_URL = 'redis://127.0.0.1:6379'
-CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379'
+CELERY_RESULT_BACKEND = 'django-db'
+# CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379'
+CELERY_CACHE_BACKEND = 'django-cache'
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'
