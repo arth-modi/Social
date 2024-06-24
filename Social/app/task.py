@@ -13,7 +13,6 @@ def sample_task():
     print("The sample task just ran.")
     
 
-
 @shared_task
 def send_email(firstname, recievermail):
     subject = "Welcome to Social Media App"
@@ -28,6 +27,5 @@ def send_mail_beat():
     message = "Thank you for registering in Social Media App."
     sendermail = settings.EMAIL_HOST_USER
     reciever_email = list(CustomUser.objects.values_list('email', flat=True))
-    # for email_i in reciever_email:
     email = EmailMessage(subject, message, sendermail, reciever_email)
     email.send()
